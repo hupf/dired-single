@@ -305,9 +305,19 @@ in another window."
           ;; assume directory if arg passed in
           (if (or default-dirname (re-search-forward "^  d" eol t))
               ;; save current buffer's name
-              (let ((current-buffer-name (buffer-name)))
+              (let* ((current-buffer-name (buffer-name))
+                     (window (get-buffer-window current-buffer-name))
+                     (dedicated (window-dedicated-p window)))
+
+                ;; disable window's dedicated state if necessary
+                (if dedicated (set-window-dedicated-p window nil))
+
                 ;; go ahead and read in the directory
                 (find-alternate-file name)
+
+                ;; restore dedicated state
+                (if dedicated (set-window-dedicated-p window t))
+
                 ;; if the saved buffer's name was the magic name, rename this buffer
                 (if (and dired-single-use-magic-buffer
                          (string= current-buffer-name dired-single-magic-buffer-name))
