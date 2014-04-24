@@ -245,11 +245,13 @@ Once a dired buffer has this name, it will always keep this name (unless it's
 
 ;; ---------------------------------------------------------------------------
 (defcustom dired-single-open-files-in-other-window nil
-  "Boolean that indicates to open files in other window instead of current window.
+  "If not nil, indicates to open files in other window instead of current
+window. If an integer, skips as many windows before opening the file, if
+t, opens the file in next window.
 
 Directories are not affected by this setting."
   :group 'dired-single
-  :type 'boolean)
+  :type 'integer)
 
 ;;; **************************************************************************
 ;;; ***** version related routines
@@ -322,10 +324,18 @@ in another window."
                 (if (and dired-single-use-magic-buffer
                          (string= current-buffer-name dired-single-magic-buffer-name))
                     (rename-buffer dired-single-magic-buffer-name)))
+
             ;; it's just a file
-            (if (not dired-single-open-files-in-other-window)
-                (find-file name)
-              (find-file-other-window name))))))))
+            (if dired-single-open-files-in-other-window
+                ;; open file in other window
+                (if (integerp dired-single-open-files-in-other-window)
+                    ;; if option is number, so skip as many windows
+                    (other-window dired-single-open-files-in-other-window)
+
+                    ;; otherwise, just open it in next window
+                    (other-window 0)))
+
+            (find-file name)))))))
 
 ;;;; ------------------------------------------------------------------------
 ;;;###autoload
